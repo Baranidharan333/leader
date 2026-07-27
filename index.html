@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ST3215 Servo Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body{
+            background:#202124;
+            color:white;
+            font-family:Arial;
+            text-align:center;
+            margin-top:40px;
+        }
+
+        h1{
+            margin-bottom:40px;
+        }
+
+        button{
+            width:260px;
+            height:70px;
+            font-size:24px;
+            margin:15px;
+            border:none;
+            border-radius:10px;
+            cursor:pointer;
+        }
+
+        .enable{
+            background:#27ae60;
+            color:white;
+        }
+
+        .disable{
+            background:#e74c3c;
+            color:white;
+        }
+
+        .reset{
+            background:#3498db;
+            color:white;
+        }
+
+        .home{
+            background:#f39c12;
+            color:white;
+        }
+
+        .sethome{
+            background:#8e44ad;
+            color:white;
+        }
+
+        #status{
+            margin-top:30px;
+            font-size:22px;
+        }
+
+        .panel{
+            width:min(720px, 92vw);
+            margin: 0 auto 24px auto;
+            padding: 18px;
+            border: 1px solid #3a3a3a;
+            border-radius: 14px;
+            background: #2b2c30;
+            text-align: left;
+        }
+
+        .row{
+            display:flex;
+            flex-wrap:wrap;
+            gap:12px;
+            align-items:center;
+            margin: 12px 0;
+        }
+
+        label{
+            min-width: 110px;
+            font-size: 18px;
+        }
+
+        input[type="text"]{
+            flex:1;
+            min-width: 220px;
+            height: 44px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            padding: 0 12px;
+            background: #111;
+            color: white;
+        }
+
+        .mode{
+            display:flex;
+            gap:18px;
+            flex-wrap:wrap;
+            font-size: 18px;
+        }
+
+        .small{
+            font-size: 14px;
+            color: #c7c7c7;
+            margin-top: 6px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<h1>ST3215 Servo Manager</h1>
+
+<div class="panel">
+    <div class="row">
+        <label for="host">UDP Host</label>
+        <input id="host" type="text" value="__UDP_HOST__" placeholder="192.168.1.50 or daksha.local">
+    </div>
+
+    <div class="row">
+        <label>Mode</label>
+        <div class="mode">
+            <label><input type="radio" name="mode" value="udp"> UDP</label>
+            <label><input type="radio" name="mode" value="serial"> Serial</label>
+        </div>
+    </div>
+
+    <div class="row">
+        <button class="reset" onclick="saveConfig()">Apply Telemetry</button>
+    </div>
+
+    <div class="small">
+        Enter either an IP address or a hostname ending in <code>.local</code>.<br>
+        Current host: <span id="currentHost">__UDP_HOST__</span><br>
+        Current mode: <span id="currentMode">__TELEMETRY_MODE__</span>
+    </div>
+</div>
+
+<button class="enable" onclick="send('/enableall')">
+Enable Torque
+</button>
+
+<br>
+
+<button class="disable" onclick="send('/disableall')">
+Disable Torque
+</button>
+
+<br>
+
+<button class="sethome" onclick="send('/sethome')">
+Set Home
+</button>
+
+<br>
+
+<button class="home" onclick="send('/gohome')">
+Go Home
+</button>
+
+<div id="status">
+Ready
+</div>
+
+<script>
+
+function send(url){
+
+    fetch(url)
+    .then(r=>r.text())
+    .then(t=>{
+        document.getElementById("status").innerHTML=t;
+    });
+
+}
+
+function saveConfig(){
+    const host = document.getElementById("host").value.trim();
+    const modeEl = document.querySelector('input[name="mode"]:checked');
+    const mode = modeEl ? modeEl.value : "udp";
+    const url = "/config?host=" + encodeURIComponent(host) + "&mode=" + encodeURIComponent(mode);
+
+    fetch(url)
+    .then(r=>r.text())
+    .then(t=>{
+        document.getElementById("status").innerHTML=t;
+        document.getElementById("currentHost").innerHTML=host || "(empty)";
+        document.getElementById("currentMode").innerHTML=mode;
+    });
+}
+
+document.querySelector('input[name="mode"][value="__TELEMETRY_MODE__"]').checked = true;
+
+</script>
+
+</body>
+</html>
